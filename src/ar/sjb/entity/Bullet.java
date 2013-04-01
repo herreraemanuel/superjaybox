@@ -3,19 +3,19 @@ package ar.sjb.entity;
 import org.flixel.*;
 
 public class Bullet extends FlxSprite {
-    private String ImgBullet = "assets/img/bullet.png";
+    private String ImgBullet = "assets/img/bullet_scb.png";
 
     public float speed;
 
     public Bullet() {
-	super();
-	loadGraphic(ImgBullet);
-	width = 4;
-	height = 4;
-	offset.x = 1;
-	offset.y = 1;
-
-	speed = 360;
+		super();
+		loadGraphic(ImgBullet);
+		width = 4;
+		height = 4;
+		offset.x = 1;
+		offset.y = 1;
+	
+		speed = 360;
     }
 
     @Override
@@ -30,13 +30,13 @@ public class Bullet extends FlxSprite {
 
     @Override
     public void kill() {
-	if (!alive){
-	    return;
-	}
-	velocity.x = 0;
-	velocity.y = 0;
-	alive = false;
-	setSolid(false);
+		if (!alive){
+		    return;
+		}
+		velocity.x = 0;
+		velocity.y = 0;
+		alive = false;
+		setSolid(false);
     }
 
     public void shoot(FlxPoint Location, int Aim) {
