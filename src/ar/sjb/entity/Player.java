@@ -1,10 +1,16 @@
 package ar.sjb.entity;
 
+import org.flixel.FlxEmitter;
 import org.flixel.FlxG;
 import org.flixel.FlxGroup;
+import org.flixel.FlxPoint;
 import org.flixel.FlxSprite;
+import org.flixel.FlxTimer;
+import org.flixel.FlxU;
+import org.flixel.event.IFlxTimer;
 
 import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.utils.Array;
 
 public class Player extends FlxSprite {
 	protected String ImgSpaceman = "assets/img/create.png";
@@ -16,11 +22,29 @@ public class Player extends FlxSprite {
 
 	private FlxGroup bullets;
 
+	private FlxEmitter _gibs;
+
+	public String name;
+
+	private FlxTimer restartTimer;
+
+	private Array<FlxPoint> spawnPoint;
+
 	// This is the player object class. Most of the comments I would put in here
 	// would be near duplicates of the Enemy class, so if you're confused at all
 	// I'd recommend checking that out for some ideas!
-	public Player(int X, int Y, Controller controller, FlxGroup bullets) {
+	public Player(int X, int Y, Controller controller, FlxGroup bullets, FlxEmitter Gibs, String name, Array<FlxPoint> spawsPoint) {
 		super(X, Y);
+		
+		this.spawnPoint = spawsPoint;
+		
+		FlxPoint spawn = FlxU.getRandom(this.spawnPoint);
+		
+		FlxG.log("Spawn point " + name + " X: " + spawn.x + " Y: " + spawn.y );
+		
+		this.x = spawn.x;
+		this.y = spawn.y;
+		
 		loadGraphic(ImgSpaceman, true, true, 10, 10);
 		_restart = 0;
 
@@ -45,16 +69,23 @@ public class Player extends FlxSprite {
 
 		this.controller = controller;
 		this.bullets = bullets;
+		
+		this._gibs = Gibs;
+		this.name = name;
+		
+		
 	}
 
 	@Override
 	public void destroy() {
 		super.destroy();
 		bullets = null;
+		_gibs = null;
 	}
 
 	@Override
 	public void update() {
+		
 		if (controller != null) {
 
 			// MOVEMENT GAMEPAD
@@ -78,21 +109,45 @@ public class Player extends FlxSprite {
 			// }
 
 		} else {
+			
+			boolean left;
+			boolean right;
+			boolean jump;
+			boolean shoot;
+			
+			if(name.equals("player1")){
+				left = FlxG.keys.A;
+				right = FlxG.keys.D;
+				jump = FlxG.keys.justPressed("W");
+				shoot = FlxG.keys.justPressed("C");
+			}else{
+				left = FlxG.keys.LEFT;
+				right = FlxG.keys.RIGHT;
+				jump = FlxG.keys.justPressed("N");
+				shoot = FlxG.keys.justPressed("M");
+			}
+			
+			
+			
 
 			// MOVEMENT KEY
-			acceleration.x = 0;
-			if (FlxG.keys.LEFT) {
-				moveLeft();
-			} else if (FlxG.keys.RIGHT) {
-				moveRight();
-			}
+			if(alive){
+				acceleration.x = 0;
+				if (left) {
+					moveLeft();
+				} else if (right) {
+					moveRight();
+				} else{
+					_aim = getFacing();
+				}
 
-			if (FlxG.keys.justPressed("X")) {
-				jump();
-			}
+				if (jump) {
+					jump();
+				}
 
-			if (FlxG.keys.justPressed("C")) {
-				shoot();
+				if (shoot) {
+					shoot();
+				}
 			}
 
 		}
@@ -136,7 +191,7 @@ public class Player extends FlxSprite {
 
 	public void shoot() {
 		getMidpoint(_point);
-		((BulletMode) bullets.recycle(BulletMode.class)).shoot(_point, _aim);
+		((Bullet) bullets.recycle(Bullet.class)).shoot(_point, _aim, name);
 	}
 
 	@Override
@@ -148,9 +203,48 @@ public class Player extends FlxSprite {
 		super.kill();
 		exists = true;
 		visible = false;
-		velocity.make();
-		acceleration.make();
+//		velocity.make();
+//		acceleration.make();
 		FlxG.camera.shake(0.005f, 0.35f);
+		
+		if(_gibs != null)
+		{
+			_gibs.at(this);
+			_gibs.start(true,5,0,50);
+		}
+		
+		startRestartTimer();
+	}
+	
+	@Override
+	public void revive() {
+		visible  = true;
+		setSolid(true);
+		
+		FlxPoint spawn = FlxU.getRandom(spawnPoint);
+		
+		FlxG.log("Spawn point " + name + " X: " + spawn.x + " Y: " + spawn.y );
+		
+		x = spawn.x;
+		y = spawn.y;
+		
+		
+		super.revive();
+	}
+
+
+	private void startRestartTimer() {
+		restartTimer = new FlxTimer();
+		restartTimer.start(3, 1, new IFlxTimer() {
+			
+			@Override
+			public void callback(FlxTimer Timer) {
+				System.out.println("Is time to revive");
+				revive();
+				
+			}
+		});
+		
 	}
 
 }

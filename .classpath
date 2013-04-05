@@ -16,6 +16,6 @@
 	<classpathentry kind="lib" path="libs/gdx/gdx-controllers-desktop-natives.jar"/>
 	<classpathentry kind="lib" path="libs/gdx/gdx-controllers-desktop.jar"/>
 	<classpathentry kind="lib" path="libs/gdx/gdx-controllers.jar"/>
-	<classpathentry kind="lib" path="libs/other/flixel-core.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/flixel-core"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
